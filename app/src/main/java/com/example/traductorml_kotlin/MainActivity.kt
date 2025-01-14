@@ -2,7 +2,9 @@ package com.example.traductorml_kotlin
 
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
 import android.widget.EditText
+import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -27,6 +29,10 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val REGISTRO = "Mis registros"
     }
+
+    private var codigo_idioma_origen = "es"
+    private var titulo_idioma_origen = "Español "
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -34,7 +40,8 @@ class MainActivity : AppCompatActivity() {
         IdiomasDisponibles()
 
         Btn_Elegir_Idioma.setOnClickListener {
-            Toast.makeText(applicationContext,"Elegir Idioma", Toast.LENGTH_SHORT).show()
+            //Toast.makeText(applicationContext,"Elegir Idioma", Toast.LENGTH_SHORT).show()
+            ElegirIdiomaOrigen()
         }
 
         Btn_Idioma_Elegido.setOnClickListener {
@@ -67,12 +74,39 @@ class MainActivity : AppCompatActivity() {
         for(codigo_lenguaje in ListaCodigoIdioma){
             val titulo_lenguaje = Locale(codigo_lenguaje).displayLanguage
 
-            Log.d(REGISTRO,"IdiomasDisponibles: codigo_lenguaje $codigo_lenguaje")
-            Log.d(REGISTRO,"IdiomasDisponibles: titulo_lenguaje $titulo_lenguaje")
+            //Log.d(REGISTRO,"IdiomasDisponibles: codigo_lenguaje $codigo_lenguaje")
+            //Log.d(REGISTRO,"IdiomasDisponibles: titulo_lenguaje $titulo_lenguaje")
 
             val modeloIdioma = Idioma(codigo_lenguaje,titulo_lenguaje)
 
             IdiomaArrayList!!.add(modeloIdioma)
         }
+    }
+
+    private fun ElegirIdiomaOrigen(){
+        val popupMenu = PopupMenu(this,Btn_Elegir_Idioma)
+
+        for (i in IdiomaArrayList!!.indices){
+            popupMenu.menu.add(Menu.NONE,i,i, IdiomaArrayList!![i].titulo_idioma)
+        }
+
+        popupMenu.show()
+
+        popupMenu.setOnMenuItemClickListener {menuItem->
+            val position = menuItem.itemId
+
+            codigo_idioma_origen = IdiomaArrayList!![position].codigo_idioma
+
+            titulo_idioma_origen = IdiomaArrayList!![position].titulo_idioma
+
+            Btn_Elegir_Idioma.text = titulo_idioma_origen
+            Et_Idioma_Origen.hint = "Ingrese texto en $titulo_idioma_origen"
+
+            Log.d(REGISTRO,"ElegirIdiomaOrigen: codigo_idioma_origen $codigo_idioma_origen")
+            Log.d(REGISTRO,"ElegirIdiomaOrigen: titulo_idioma_origen $titulo_idioma_origen")
+
+            false
+        }
+
     }
 }
