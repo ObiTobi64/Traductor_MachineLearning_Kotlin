@@ -1,5 +1,6 @@
 package com.example.traductorml_kotlin
 
+import android.app.ProgressDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -13,7 +14,11 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.traductorml_kotlin.Modelo.Idioma
 import com.google.android.material.button.MaterialButton
+import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.nl.translate.TranslateLanguage
+import com.google.mlkit.nl.translate.Translation
+import com.google.mlkit.nl.translate.Translator
+import com.google.mlkit.nl.translate.TranslatorOptions
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
@@ -36,6 +41,12 @@ class MainActivity : AppCompatActivity() {
     private var codigo_idioma_destino = "en"
     private var titulo_idioma_destino = "Inglés"
 
+    private lateinit var translateOptions: TranslatorOptions //Nos sirve para establecer el idioma origen y el destino
+    private lateinit var translator: Translator //Traduce el texto
+    private lateinit var progressDialog : ProgressDialog
+
+    private var Texto_idioma_origen = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -53,8 +64,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         Btn_Traducir.setOnClickListener {
-            Toast.makeText(applicationContext,"Traducir", Toast.LENGTH_SHORT).show()
-
+            //Toast.makeText(applicationContext,"Traducir", Toast.LENGTH_SHORT).show()
+            ValidarDatos()
         }
 
 
@@ -66,6 +77,9 @@ class MainActivity : AppCompatActivity() {
         Btn_Elegir_Idioma = findViewById(R.id.Btn_Elegir_Idioma)
         Btn_Idioma_Elegido = findViewById(R.id.Btn_Idioma_Elegido)
         Btn_Traducir = findViewById(R.id.Btn_Traducir)
+        progressDialog = ProgressDialog(this)
+        progressDialog.setTitle("Espere porfavor")
+        progressDialog.setCanceledOnTouchOutside(false)
     }
 
     private fun IdiomasDisponibles(){
@@ -136,5 +150,53 @@ class MainActivity : AppCompatActivity() {
 
             false
         }
+    }
+
+    private fun ValidarDatos() {
+        Texto_idioma_origen = Et_Idioma_Origen.text.toString().trim()
+        if (Texto_idioma_origen.isEmpty()){
+            Toast.makeText(applicationContext,"Ingrese Texto", Toast.LENGTH_SHORT).show()
+        }else{
+            TraducirTexto()
+        }
+    }
+
+    private fun TraducirTexto() {
+        progressDialog.setMessage("Procesando")
+        progressDialog.show()
+
+        translateOptions=TranslatorOptions.Builder()
+            .setSourceLanguage(codigo_idioma_origen)
+            .setTargetLanguage(codigo_idioma_destino)
+            .build()
+
+        translator = Translation.getClient(translateOptions)
+
+        val downloadConditions = DownloadConditions.Builder()
+            .requireWifi()
+            .build()
+
+        translator.downloadModelIfNeeded(downloadConditions)
+            .addOnSuccessListener {
+                Log.d(REGISTRO,"El paquete de traducción esta listo")
+                progressDialog.setMessage("Traduciendo texto")
+
+                translator.translate(Texto_idioma_origen)
+
+                    .addOnSuccessListener {texto_traducido->
+                        Log.d(REGISTRO,"text traducido $texto_traducido")
+                        progressDialog.dismiss()
+                        Tv_Idioma_Destino.text = texto_traducido
+                    }
+                    .addOnFailureListener {e->
+                        progressDialog.dismiss()
+                        Log.d("Error","${e.message}")
+                    }
+
+            }
+            .addOnFailureListener {e->
+                Toast.makeText(applicationContext,"$e",Toast.LENGTH_SHORT).show()
+
+            }
     }
 }
