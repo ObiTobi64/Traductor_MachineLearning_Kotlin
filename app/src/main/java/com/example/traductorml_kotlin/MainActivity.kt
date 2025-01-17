@@ -1,9 +1,13 @@
 package com.example.traductorml_kotlin
 
+import android.app.Dialog
 import android.app.ProgressDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.widget.Button
 import android.widget.EditText
 import android.widget.PopupMenu
 import android.widget.TextView
@@ -198,5 +202,48 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(applicationContext,"$e",Toast.LENGTH_SHORT).show()
 
             }
+    }
+
+    private fun MostrarDialog(){
+        val Btn_entendido : Button
+        val dialog = Dialog(this@MainActivity)
+
+        dialog.setContentView(R.layout.custom_dialog)
+        Btn_entendido = dialog.findViewById(R.id.Btn_entendido)
+
+        Btn_entendido.setOnClickListener{
+            dialog.dismiss()
+        }
+        dialog.show()
+        dialog.setCanceledOnTouchOutside(false)
+    }
+
+    //Creamos el menu
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.mi_menu,menu)
+        return true
+    }
+
+    //Seleccionamos un elemento del menu
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId){
+            R.id.Menu_Informacion ->{
+
+                val S_traduccion = "Traducción"
+                Et_Idioma_Origen.setText("")
+                Et_Idioma_Origen.hint = "Ingrese Texto"
+                Tv_Idioma_Destino.text = S_traduccion
+
+                true
+            }
+
+            R.id.Menu_Informacion ->{
+                MostrarDialog()
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 }
